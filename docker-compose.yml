@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: scw-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: smart_chili_warehouse
+    ports:
+      - "5432:5432"
+    volumes:
+      - scw_pgdata:/var/lib/postgresql/data
+volumes:
+  scw_pgdata:

@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum StorageRoom {
+  PRE_COOLING
+  COLD_A
+  COLD_B
+  REJECT
+  TRUCK
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum AlertStatus {
+  ACTIVE
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum AiClass {
+  CABAI_BUSUK_10
+  CABAI_BUSUK_5
+  CABAI_SEGAR
+}
+
+enum LotStatus {
+  RECEIVED
+  SORTED
+  STORED
+  RELEASED
+  REJECTED
+}
+
+model SensorReading {
+  id          String      @id @default(cuid())
+  deviceId    String
+  room        StorageRoom
+  temperature Float?
+  humidity    Float?
+  co2         Float?
+  ethylene    Float?
+  oxygen      Float?
+  pressurePa  Float?
+  doorOpen    Boolean?
+  powerKw     Float?
+  energyKwh   Float?
+  lux         Float?
+  airflow     Float?
+  vibration   Float?
+  weightKg    Float?
+  conveyorMs  Float?
+  recordedAt  DateTime    @default(now())
+  createdAt   DateTime    @default(now())
+
+  @@index([room, recordedAt])
+  @@index([deviceId, recordedAt])
+}
+
+model Alert {
+  id         String        @id @default(cuid())
+  code       String
+  title      String
+  message    String
+  severity   AlertSeverity
+  status     AlertStatus   @default(ACTIVE)
+  room       StorageRoom?
+  source     String
+  createdAt  DateTime      @default(now())
+  resolvedAt DateTime?
+
+  @@index([status, createdAt])
+}
+
+model Lot {
+  id          String        @id @default(cuid())
+  lotCode     String        @unique
+  qrCode      String        @unique
+  origin      String?
+  weightKg    Float
+  crateCount  Int           @default(1)
+  aiClass     AiClass?
+  grade       String?
+  confidence  Float?
+  storageRoom StorageRoom?
+  rackCode    String?
+  status      LotStatus     @default(RECEIVED)
+  receivedAt  DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  detections  AiDetection[]
+
+  @@index([status, receivedAt])
+}
+
+model AiDetection {
+  id         String   @id @default(cuid())
+  lotId      String?
+  lot        Lot?     @relation(fields: [lotId], references: [id], onDelete: SetNull)
+  modelName  String
+  classId    Int
+  className  String
+  confidence Float
+  x1         Float?
+  y1         Float?
+  x2         Float?
+  y2         Float?
+  imagePath  String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model ActuatorLog {
+  id          String      @id @default(cuid())
+  deviceId    String
+  room        StorageRoom
+  actuator    String
+  state       String
+  reason      String
+  triggeredBy String      @default("RULE_BASED")
+  createdAt   DateTime    @default(now())
+}
