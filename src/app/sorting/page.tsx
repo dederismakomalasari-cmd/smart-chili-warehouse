@@ -337,7 +337,7 @@ export default function Sorting() {
       <div className="pagehead">
         <div>
           <div className="eyebrow">EDGE AI · COMPUTER VISION</div>
-          <h1>AI Quality Sorting — YOLO11</h1>
+          <h1>AI Quality Sorting</h1>
           <div className="sub">
             Deteksi kualitas cabai menggunakan kamera dan model YOLO11.
           </div>
